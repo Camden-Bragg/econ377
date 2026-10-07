@@ -1,0 +1,271 @@
+############################################################
+# ECONOMETRICS EXAM - COMPACT MASTER SCRIPT
+# Change INPUTS, run those lines, then run the section you need.
+# Search this file for a heading or term such as "residual".
+# For blocks with assignments, run the WHOLE relevant block again.
+# Keep full precision in stored values; round final answers only.
+############################################################
+# FIND YOUR QUESTION:
+# Raw sample -> 2 | Probability table -> 3 | Transformations -> 4-5
+# Conditional mean -> 6 | OLS concepts -> 7 | Fit a line -> 8
+# Given line -> 9 | Multiple-variable changes -> 10
+# Residuals / R2 -> 11 | Sums of squares -> 12-14
+# Wooldridge -> 16-20 | Normal probabilities -> 21
+
+# ===================== 1. INPUTS ===========================
+# These are example numbers. Replace only what your question gives.
+x <- c(5,3,7)                     # raw X OR possible X outcomes
+y <- c(7,13,3)                    # paired Y OR possible Y outcomes
+p <- c(.2,.3,.5)                  # ONLY when probabilities are given
+x_value <- 8                     # X used for prediction / condition
+change_x <- 7; change_y <- 14     # changes in X and Y
+y_actual <- 4                    # actual Y for residual question
+subgroup_y <- c(0,1,1,5)          # Y values already in subgroup
+EY_given_X <- 5                  # supplied E[Y|X=x]
+EX <- 3; EY <- 1; EX2 <- 41; EXY <- 26
+VarX <- 9; VarY <- 6; CovXY <- -3
+Sx <- 2; Sy <- 3                 # SDs, NOT variances
+a <- 5; b <- 9; c0 <- 3; a1 <- 5; a2 <- 3; constant <- 7
+beta0_given <- 1; beta1_given <- 3/10 # given intercept; slope
+xbar_given <- 9; ybar_given <- 11
+slopes <- c(3,5); changes <- c(1,3) # paired slopes / changes in multiple Xs
+old_value <- 4; new_value <- 6    # rates: 4 and 6 for 4% to 6%
+# PROFESSOR: SST=total, SSE=explained, SSR=residual/unexplained
+SST_given <- 302; SSE_given <- 87; SSR_given <- 80
+R2_given <- 25/100                # 25%, NOT 25
+
+# WOOLDRIDGE INPUTS - examples; use the exam's dataset and columns
+dataset_name <- "wage1"
+x_col <- "educ"; y_col <- "wage" # explanatory variable; outcome
+filter_col <- "female"; filter_value <- 1
+filter_expr <- "female == 1 & educ >= 12" # multiple conditions
+row_no <- 3; col_no <- 1          # positions start at 1
+element_numbers <- c(3,5,7)       # positions in a vector
+# EXTRA NORMAL INPUTS: sigma is STANDARD DEVIATION
+mu <- 0; sigma <- 1; lower <- -1; upper <- 1; quantile_prob <- .95
+
+# ================= 2. BASIC SAMPLE STATS ===================
+# Raw observations: use n-1 for sample variance and covariance.
+length(x)                         # sample size, including repeated values
+sum(x)                            # summation: add all values
+round(mean(x),2); round(mean(y),2) # sample means
+round(var(x),2)                   # sample variance
+round(sd(x),2)                    # sample standard deviation
+round(cov(x,y),2)                 # sample covariance: paired X,Y
+round(cor(x,y),2)                 # correlation: strength and direction
+round(100*(new_value-old_value)/old_value,2) # percent change
+round(new_value-old_value,2)      # percentage points if inputs are 4 and 6
+x[element_numbers]               # positions: x[c(3,5,7)], not values
+# Positions beyond length(x) return NA; enter enough values first.
+
+# ============== 3. PROBABILITY DISTRIBUTIONS ===============
+# Use possible outcomes with given probabilities; NOT raw sample formulas.
+# Joint table: x, y, p must line up row by row, including repetitions.
+sum(p)                            # must = 1; no negative probabilities
+round(sum(x*p),2)                 # E[X]
+round(sum(y*p),2)                 # E[Y]
+round(sum(x^2*p),2)               # E[X^2], NOT (E[X])^2
+round(sum(x*y*p),2)               # E[XY]
+round(sum(x^2*p)-sum(x*p)^2,2)    # Var(X)
+round(sum(x*y*p)-sum(x*p)*sum(y*p),2) # Cov(X,Y)
+prob_CovXY <- sum(x*y*p)-sum(x*p)*sum(y*p)
+prob_VarX <- sum(x^2*p)-sum(x*p)^2
+round(prob_CovXY/prob_VarX,2)     # population slope from probability table
+# Equally likely outcomes: enter p=c(1/3,1/3,1/3) for 3 outcomes.
+
+# ============== 4. EXPECTATION / VARIANCE ==================
+constant                           # E[c]=c; Var(c)=0
+round(a*EX+b,2)                    # E[aX+b]
+round(a*EX+b*EY,2)                 # E[aX+bY]; independence NOT required
+round(a*EX+b*EY-c0,2)              # E[aX+bY-c]
+round(EX2-EX^2,2)                  # Var(X)=E[X^2]-(E[X])^2
+round(sqrt(VarX),2)                # SD from variance
+round(Sx^2,2)                      # variance from SD
+round(a^2*VarX,2)                  # Var(aX+b); added constant has no effect
+round(VarX+VarY+2*CovXY,2)         # Var(X+Y), general
+round(VarX+VarY-2*CovXY,2)         # Var(X-Y), general
+round(VarX+VarY,2)                 # Var(X+Y), independent X and Y
+round(a^2*VarX+b^2*VarY+2*a*b*CovXY,2) # Var(aX+bY); use negative b for minus
+
+# ============== 5. COVARIANCE / CORRELATION ================
+round(EXY-EX*EY,2)                 # Cov(X,Y) from supplied moments
+round(a1*a2*CovXY,2)               # Cov(a1X+b1,a2Y+b2); shifts do not matter
+round(mean(x*y)-mean(x)*mean(y),2) # entire distribution, equally likely pairs
+round(CovXY/(Sx*Sy),2)             # correlation from covariance and SDs
+# Independent => Cov=0 and E[XY]=E[X]E[Y]; reverse need NOT hold.
+# Correlation: unitless, -1 to +1; near 0 means weak LINEAR association.
+# Positive covariance: move together; negative: move oppositely.
+# Correlation does not establish causation.
+
+# ============== 6. CONDITIONAL EXPECTATION ================
+round(mean(y[x==x_value]),2)       # paired data: average Y at this X
+round(mean(subgroup_y),2)          # ONLY subgroup Y values are supplied
+round(sum(y*p),2)                  # p are probabilities GIVEN the condition
+round(a*EY_given_X+b,2)            # E[aY+b | X=x]
+# Use the matching subgroup, not every Y. No matches -> NaN.
+
+# ================= 7. OLS QUICK CONCEPTS ===================
+# Y=beta0+beta1*X+U: Y=dependent outcome; X=explanatory variable.
+# beta0=intercept; beta1=slope; U=other unobserved factors.
+# Betas are population parameters; hats are sample estimates.
+# Yhat=beta0_hat+beta1_hat*X; residual u_hat=Y-Yhat.
+# u_hat>0: UNDER-predicted; u_hat<0: OVER-predicted; zero: exact fit.
+# E[U|X]=0 means average U is zero at EVERY X, not every U=0.
+# Under this assumption: E[Y|X=x]=beta0+beta1*x.
+# Causal interpretation requires the model assumptions.
+# With an intercept: residuals sum to 0; line passes through (xbar,ybar).
+# R2=fraction of sample Y variation explained by the fitted model.
+# Low R2 means little explained; it does NOT alone make a model invalid.
+
+# ================ 8. OLS FROM RAW x AND y ==================
+# Run this WHOLE block after changing x or y. X must vary.
+beta1_hat <- cov(x,y)/var(x)
+round(beta1_hat,2)                 # sample slope
+round(sum((x-mean(x))*(y-mean(y)))/sum((x-mean(x))^2),2) # same exact formula
+beta0_hat <- mean(y)-beta1_hat*mean(x)
+round(beta0_hat,2)                 # intercept
+round(beta0_hat+beta1_hat*x_value,2) # predict Y at x_value
+round(beta1_hat*change_x,2)         # change in predicted Y
+round(beta0_hat+beta1_hat*mean(x),2) # equals mean(y)
+# +1 X -> predicted Y changes by slope; intercept -> predicted Y at X=0.
+
+# ================= 9. GIVEN FITTED LINE ====================
+# Use supplied beta0/beta1; do not estimate a new line.
+y_hat_given <- beta0_given+beta1_given*x_value
+round(y_hat_given,2)               # fitted/predicted Y; do not add unknown U
+residual_given <- y_actual-y_hat_given
+round(residual_given,2)            # residual = actual - fitted
+round(beta1_given*change_x,2)      # change in predicted Y; intercept cancels
+round(CovXY/VarX,2)                # slope from supplied covariance/variance
+round(ybar_given-beta1_given*xbar_given,2) # intercept from means and slope
+round(change_y/change_x,2)        # slope from changes = rise/run
+
+# ============= 10. MULTIPLE-REGRESSION CHANGES =============
+# Given slopes and changes for 2 or 3 X variables: match their order.
+round(sum(slopes*changes),2)      # total predicted change in Y
+# Holding an X fixed -> its change is 0. Intercept cancels.
+# c(3,5) slopes and c(1,3) changes -> 3*1+5*3=18.
+
+# ============== 11. OLS MODEL / RESIDUALS / R2 ==============
+# Run this WHOLE block after changing x,y; it fits the current data.
+model <- lm(y~x)                  # Y left of ~; intercept included
+fitted_values <- fitted(model)
+residuals_ols <- resid(model)
+round(fitted_values,2)             # all fitted values
+round(residuals_ols,2)             # all residuals
+round(sum(residuals_ols),10)       # zero up to floating-point rounding
+round(summary(model)$r.squared,2) # R2; requires nonconstant Y
+summary(model)                    # full regression output
+
+# ================ 12. SST / SSE / SSR FROM DATA ============
+# Run section 11 FIRST for current x,y. Professor's notation:
+# SST=TOTAL; SSE=EXPLAINED; SSR=RESIDUAL/UNEXPLAINED.
+SST <- sum((y-mean(y))^2)
+SSE <- sum((fitted_values-mean(y))^2)
+SSR <- sum(residuals_ols^2)
+round(c(SST=SST,SSE=SSE,SSR=SSR),2)
+round(SSE+SSR,2)                  # equals SST, OLS with intercept
+round(SSE/SST,2)                  # R2
+round(1-SSR/SST,2)                # same R2
+round(SSR/SST,2)                  # unexplained fraction
+
+# ============ 13. GIVEN LINE + POINTS -> FIND SSR ===========
+# Put supplied point coordinates in x,y. Do NOT refit the given line.
+y_hat_line <- beta0_given+beta1_given*x
+residuals_line <- y-y_hat_line
+round(sum(residuals_line^2),2)     # SSR: sum of squared residuals
+
+# ============= 14. GIVEN SST / SSE / SSR / R2 ===============
+# SST=SSE+SSR; use ONLY the quantities supplied by your question.
+round(SST_given-SSR_given,2)       # find explained SSE
+round(SST_given-SSE_given,2)       # find residual SSR
+round(SSE_given/SST_given,2)       # R2 from explained SSE and total SST
+round(1-SSR_given/SST_given,2)     # R2 from residual SSR and total SST
+round(SSR_given/SST_given,2)       # unexplained fraction = 1-R2
+round((1-R2_given)*SST_given,2)    # SSR from SST and R2
+round(R2_given*SST_given,2)        # SSE from SST and R2
+# Multiply fractions by 100 ONLY if asked for a percentage.
+
+# ================= 15. FAST FORMULA CHECK ==================
+# E[aX+b]=aE[X]+b; E[aX+bY]=aE[X]+bE[Y].
+# Var(X)=E[X^2]-E[X]^2; Var(aX+b)=a^2*Var(X).
+# Var(aX+bY)=a^2*VarX+b^2*VarY+2*a*b*CovXY.
+# Cov(X,Y)=E[XY]-E[X]E[Y]; correlation=CovXY/(Sx*Sy).
+# Slope=Cov(X,Y)/Var(X); intercept=ybar-slope*xbar.
+# Prediction=intercept+slope*x; residual=actual-predicted.
+# SST=SSE+SSR; R2=SSE/SST=1-SSR/SST; unexplained=SSR/SST.
+# RAW SAMPLE: cov(x,y), var(x). GIVEN p: weighted formulas in section 3.
+
+# =============== 16. WOOLDRIDGE: LOAD / FIND VARIABLES ======
+# Install ONCE before exam if needed (remove # to run the next line):
+# install.packages("wooldridge")
+# Run the NEXT THREE LINES after changing dataset_name.
+data_env <- new.env()
+data(list=dataset_name,package="wooldridge",envir=data_env)
+d <- get(dataset_name,envir=data_env,inherits=FALSE)
+head(d)                           # first 6 rows
+dim(d); nrow(d); ncol(d)           # dimensions; observations; variables
+names(d)                          # exact column names; case-sensitive
+str(d)                            # column types and structure
+help(dataset_name,package="wooldridge") # codebook: definitions / units
+data(package="wooldridge")        # list available datasets
+# wage1 example only: wage=hourly earnings; educ=years of education.
+
+# =============== 17. WOOLDRIDGE: VALUES / COLUMN STATS ======
+# Run section 16 first. Choose row/column or y_col in INPUTS.
+d[row_no,col_no]                  # one value: numeric column position
+d[row_no,y_col]                   # one value: column NAME in y_col
+d[row_no,]                        # entire observation / row
+d[[y_col]]                        # entire selected column
+v <- d[[y_col]]                   # rerun this when d or y_col changes
+sum(!is.na(v)); sum(is.na(v))     # observed values; missing values
+round(mean(v,na.rm=TRUE),2)       # column mean (ignores missing)
+round(median(v,na.rm=TRUE),2)     # column median
+round(var(v,na.rm=TRUE),2)        # column sample variance
+round(sd(v,na.rm=TRUE),2)         # column sample SD
+min(v,na.rm=TRUE); max(v,na.rm=TRUE) # smallest / largest observed value
+
+# =============== 18. WOOLDRIDGE: SUBGROUP / COUNT / FILTER ==
+# Run section 16 first. Set y_col,filter_col,filter_value above.
+keep <- !is.na(d[[filter_col]]) & d[[filter_col]]==filter_value
+round(mean(d[[y_col]][keep],na.rm=TRUE),2) # subgroup mean, e.g. women
+sum(keep)                         # number of observations in subgroup
+known <- sum(!is.na(d[[filter_col]])) # denominator with known group status
+round(sum(keep)/known,2)          # subgroup proportion among KNOWN statuses
+round(100*sum(keep)/known,2)      # subgroup percentage among KNOWN statuses
+round(sum(keep)/nrow(d),2)        # proportion if denominator is ALL rows
+table(d[[filter_col]],useNA="ifany") # counts for each category + missing
+prop.table(table(d[[filter_col]])) # nonmissing category proportions
+subset(d,subset=eval(parse(text=filter_expr),envir=d)) # multiple conditions
+# filter_expr: & means AND; | OR; == equals; >= at least; != not equal.
+# Example: "female == 1 & educ >= 12". Keep extracted data unrounded.
+
+# =============== 19. WOOLDRIDGE: COVARIANCE / CORRELATION ===
+# Run section 16 first. Both statistics use SAME complete paired rows.
+paired <- d[complete.cases(d[,c(x_col,y_col)]),c(x_col,y_col),drop=FALSE]
+nrow(paired)                      # number of complete pairs used
+round(cov(paired[[x_col]],paired[[y_col]]),2) # sample covariance
+round(cor(paired[[x_col]],paired[[y_col]]),2) # sample correlation
+
+# =============== 20. WOOLDRIDGE: REGRESSION / PREDICTION ====
+# Run section 16 first. Set x_col,y_col,x_value. Run whole block again.
+data_model <- lm(reformulate(x_col,response=y_col),data=d)
+summary(data_model)               # full output; e.g. wage ~ educ
+round(coef(data_model),2)         # intercept and slope
+round(summary(data_model)$r.squared,2) # R2
+nobs(data_model)                  # observations actually used (missing dropped)
+new_x <- setNames(data.frame(x_value),x_col)
+round(predict(data_model,newdata=new_x),2) # predicted Y at specified X
+# Prediction is fitted Y. Actual average among X=x uses section 18:
+# set filter_col to x_col, filter_value to x_value, then rerun section 18.
+
+# =============== 21. EXTRA: NORMAL PROBABILITIES ===========
+# Extra reference; not confirmed in recovered problem sets. sigma=SD.
+pnorm(upper,mean=mu,sd=sigma)      # P(X <= upper)
+pnorm(lower,mean=mu,sd=sigma,lower.tail=FALSE) # P(X > lower)
+pnorm(upper,mu,sigma)-pnorm(lower,mu,sigma) # P(lower < X < upper)
+qnorm(quantile_prob,mean=mu,sd=sigma) # cutoff: e.g. 95th percentile
+# pnorm gives probability; qnorm gives a VALUE; exact-point probability is 0.
+# Coverage: recovered past questions/scripts; Wooldridge examples are general.
+# Handwritten iCloud/class files were unavailable; coverage is not exhaustive.
+############################################################
